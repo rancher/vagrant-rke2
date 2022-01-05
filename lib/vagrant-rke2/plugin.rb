@@ -17,11 +17,6 @@ module Vagrant
         Provisioner
       end
 
-      command(:rke2, primary: true) do
-        require_relative 'command'
-        Command
-      end
-
       guest_capability(:linux, :rke2_installed) do
         require_relative "cap/linux/rke2_installed"
         Cap::Linux::Rke2Installed
