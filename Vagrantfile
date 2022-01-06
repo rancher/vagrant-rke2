@@ -1,0 +1,38 @@
+ENV['VAGRANT_I_KNOW_WHAT_IM_DOING_PLEASE_BE_QUIET'] = 'true'
+
+Vagrant.configure("2") do |config|
+  # the vm.define mullet: business up front, party in the back (below)
+  config.vm.define 'vagrant-rke2-test', primary: true do |node|
+    node.vm.box = 'ubuntu/focal64'
+    node.vm.hostname = 'vagrant'
+    node.vm.provision :rke2, run: "once" do |rke2|
+      rke2.args = %w[server]
+      rke2.env = %w[
+        INSTALL_RKE2_CHANNEL=stable
+        INSTALL_RKE2_TYPE=server
+      ]
+      rke2.config_mode = '0644' # side-step https://github.com/k3s-io/k3s/issues/4321
+      rke2.config = <<~YAML
+        write-kubeconfig-mode: 0644
+        node-name: "THISISATEST"
+        token: vagrant-rke2
+      YAML
+    end
+  end
+
+  # turn off this noise, we don't need it
+  config.vm.synced_folder '.', '/vagrant', disabled: true
+
+  %w[libvirt virtualbox].each do |p|
+    config.vm.provider p do |v|
+      v.cpus = 2         
+      v.memory = 2048
+    end
+  end
+
+  config.vm.provider :virtualbox do |v|
+    v.gui = false
+    v.check_guest_additions = false
+  end
+
+end

@@ -33,7 +33,7 @@ module Vagrant
         # @return [String]
         attr_accessor :config_path
   
-        # string (.env), array, or hash
+        # string (.env) or array
         # @return [Array<String>]
         attr_accessor :env
   

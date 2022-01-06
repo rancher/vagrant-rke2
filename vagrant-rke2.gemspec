@@ -1,4 +1,4 @@
-require_relative 'lib/vagrant/rke2/version'
+require_relative 'lib/vagrant-rke2/version'
 
 Gem::Specification.new do |spec|
   spec.name          = "vagrant-rke2"
@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
 
   spec.summary       = "Manage RKE2 installations on Vagrant guests"
   spec.description   = spec.summary
-  spec.homepage      = https://github.com/dereknola/vagrant-rke2
+  spec.homepage      = "https://github.com/dereknola/vagrant-rke2"
   spec.required_ruby_version = Gem::Requirement.new(">= 2.3.0")
 
 
