@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module Vagrant
+module VagrantPlugins
     module Rke2
       class Config < Vagrant.plugin(2, :config)
         DEFAULT_FILE_MODE = '0600'
@@ -12,10 +12,6 @@ module Vagrant
         DEFAULT_ENV_OWNER = DEFAULT_FILE_OWNER
         DEFAULT_ENV_PATH = '/etc/rancher/rke2/install.env'
         DEFAULT_INSTALLER_URL = 'https://get.rke2.io'
-  
-        # string or array
-        # @return [Array<String>]
-        attr_accessor :args
   
         # string (.yaml) or hash
         # @return [Hash]
@@ -54,7 +50,6 @@ module Vagrant
         attr_accessor :installer_url
   
         def initialize
-          @args = UNSET_VALUE
           @config = UNSET_VALUE
           @config_mode = UNSET_VALUE
           @config_owner = UNSET_VALUE
@@ -67,7 +62,6 @@ module Vagrant
         end
   
         def finalize!
-          @args = [] if @args == UNSET_VALUE
           @config = "" if @config == UNSET_VALUE
           @config_mode = @config_mode == UNSET_VALUE ? DEFAULT_CONFIG_MODE : @config_mode.to_s
           @config_owner = @config_owner == UNSET_VALUE ? DEFAULT_CONFIG_OWNER : @config_owner.to_s
@@ -78,17 +72,10 @@ module Vagrant
           @env_path = DEFAULT_ENV_PATH if @env_path == UNSET_VALUE
           @installer_url = DEFAULT_INSTALLER_URL if @installer_url == UNSET_VALUE
   
-          if @args && args_valid?
-            @args = @args.is_a?(Array) ? @args.map { |a| a.to_s } : @args.to_s
-          end
         end
   
         def validate(machine)
           errors = _detected_errors
-  
-          unless args_valid?
-            errors << "Rke2 provisioner `args` must be an array or string."
-          end
   
           unless config_valid?
             errors << "Rke2 provisioner `config` must be a hash or string (yaml)."
@@ -101,21 +88,7 @@ module Vagrant
           { "rke2 provisioner" => errors }
         end
   
-        def args_valid?
-          return true unless args
-          return true if args.is_a?(String)
-          return true if args.is_a?(Integer)
-          if args.is_a?(Array)
-            args.each do |a|
-              return false if !a.kind_of?(String) && !a.kind_of?(Integer)
-            end
-            return true
-          end
-          false
-        end
-  
         def config_valid?
-          return true unless args
           return true if config.is_a?(String)
           return true if config.is_a?(Hash)
           false

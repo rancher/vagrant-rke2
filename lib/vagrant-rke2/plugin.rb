@@ -2,7 +2,7 @@
 
 require_relative 'version'
 
-module Vagrant
+module VagrantPlugins
   module Rke2
     class Plugin < Vagrant.plugin(2)
       name 'rke2'

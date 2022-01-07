@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module Vagrant
+module VagrantPlugins
     module Rke2
       module Cap
         module Linux

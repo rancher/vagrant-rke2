@@ -1,11 +1,11 @@
 # frozen_string_literal: false
 
 require 'multi_json/convertible_hash_keys'
-require 'vagrant'
+require "vagrant/util/line_buffer"
 require 'vagrant/errors'
 require 'yaml'
 
-module Vagrant
+module VagrantPlugins
   module Rke2
     class Provisioner < Vagrant.plugin('2', :provisioner)
       include MultiJson::ConvertibleHashKeys
@@ -15,14 +15,6 @@ module Vagrant
       end
 
       def provision
-        args = ""
-        if config.args.is_a?(String)
-          args = " #{config.args.to_s}"
-        elsif config.args.is_a?(Array)
-          args = config.args.map { |a| quote_and_escape(a) }
-          args = " #{args.join(" ")}"
-        end
-
         unless @machine.guest.capability(:curl_installed)
           @machine.ui.info 'Installing Curl ...'
           @machine.guest.capability(:curl_install)
@@ -53,7 +45,7 @@ module Vagrant
           set -o allexport
           source #{config.env_path}
           set +o allexport
-          curl -fsL '#{config.installer_url}' | sh -s - #{args}
+          curl -fsL '#{config.installer_url}' | sh -
         EOF
         file_upload("rke2-install.sh", prv_file, prv_text)
         @machine.ui.info "Invoking: #{prv_file}"

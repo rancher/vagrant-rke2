@@ -2,11 +2,11 @@ require_relative 'lib/vagrant-rke2/version'
 
 Gem::Specification.new do |spec|
   spec.name          = "vagrant-rke2"
-  spec.version       = Vagrant::Rke2::VERSION
+  spec.version       = VagrantPlugins::Rke2::VERSION
   spec.authors       = ["Derek Nola"]
   spec.email         = ["derek.nola@suse.com"]
 
-  spec.license      = 'Apache 2.0'
+  spec.license      = 'Apache-2.0'
 
   spec.summary       = "Manage RKE2 installations on Vagrant guests"
   spec.description   = spec.summary
