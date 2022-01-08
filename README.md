@@ -22,7 +22,8 @@ end
 ## Development
 
 See https://www.vagrantup.com/docs/plugins/development-basics
-
+- `gem build`
+- `VAGRANT_CWD=./test bundle exec vagrant up`
 ## Contributing
 
 Bug reports and pull requests are welcome on GitHub at https://github.com/dereknola/vagrant-rke2. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [code of conduct](CODE_OF_CONDUCT.md).
