@@ -27,7 +27,7 @@ module VagrantPlugins
   
         # Defaults to `/etc/rancher/rke2/config.yaml`
         # @return [String]
-        attr_accessor :config_path
+        # attr_accessor :config_path
   
         # string (.env) or array
         # @return [Array<String>]
