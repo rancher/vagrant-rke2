@@ -66,6 +66,22 @@ module VagrantPlugins
           outputs.values.map(&:close)
         end
 
+        if config.install_kubectl
+          kube_file = "/vagrant/kubectl-install.sh"
+          kube_text = <<~EOF
+            curl -L "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" -o /usr/local/bin/kubectl
+            chmod +x /usr/local/bin/kubectl
+          EOF
+          file_upload("kubectl-install.sh", kube_file, kube_text)
+          @machine.ui.info "Invoking: #{kube_file}"
+          outputs, handler = build_outputs
+          begin
+            @machine.communicate.sudo("chmod +x #{kube_file} && #{kube_file}", &handler)
+          ensure
+            outputs.values.map(&:close)
+          end
+        end
+
         begin
           exe = "rke2"
           @machine.ui.info 'Checking the RKE2 version ...'
@@ -75,13 +91,15 @@ module VagrantPlugins
         rescue Vagrant::Errors::VagrantError => e
           @machine.ui.detail "#{e.extra_data[:stderr].chomp}", :color => :red
         else
-          outputs, handler = build_outputs
-          begin
-            @machine.communicate.sudo("#{exe} --version", :error_key => :ssh_bad_exit_status_muted, &handler)
-          ensure
-            outputs.values.map(&:close)
+          @machine.communicate.sudo("#{exe} --version", :error_key => :ssh_bad_exit_status_muted) do |type, line|
+            @machine.ui.detail line, :color => :yellow
           end
         end
+
+        @machine.ui.info "Starting RKE2 service..."
+        @machine.communicate.sudo("systemctl enable rke2-server.service")
+        @machine.communicate.sudo("systemctl start rke2-server.service")
+
       end
 
       def provisionWindows 
@@ -100,7 +118,7 @@ module VagrantPlugins
         @machine.ui.info "Invoking: #{containerScript}"
   
         command = File.read(scriptDir + containerScript)
-        @machine.communicate.execute(command, shell: :powershell, elevated: true)
+        @machine.communicate.execute(command, {shell: :powershell, elevated: true})
         @machine.guest.capability(:reboot)
         @machine.guest.capability(:wait_for_reboot)
 
@@ -111,18 +129,16 @@ module VagrantPlugins
         command["!!INSTALL_URL!!"] = config.installer_url
         command["!!CONFIG!!"] = config.config
         command["!!ENV!!"] = env_text
-        @machine.communicate.execute(command, shell: :powershell, elevated: true)
+        @machine.communicate.execute(command, {shell: :powershell, elevated: true})
 
         @machine.ui.info "Checking RKE2 version:"
-        @machine.communicate.test("Get-Command rke2", shell: :powershell)
-        output = ""
-        @machine.communicate.execute("rke2 --version", shell: :powershell)  do |type, line|
-          output = output + "#{line}" if type == :stdout && !line.nil?
+        @machine.communicate.test("Get-Command rke2", {shell: :powershell})
+        @machine.communicate.execute("rke2 --version", {shell: :powershell})  do |type, line|
+          @machine.ui.detail line, :color => :yellow
         end
-        @machine.ui.info output
 
         @machine.ui.info "Starting RKE2 agent:"
-        @machine.communicate.execute("rke2.exe agent service --add", shell: :powershell, elevated: true)
+        @machine.communicate.execute("rke2.exe agent service --add", {shell: :powershell, elevated: true} )
       end
 
       def build_outputs
@@ -166,9 +182,7 @@ module VagrantPlugins
           remote_tmp_dir = @machine.guest.capability :create_tmp_path, {:type => :directory}
           remote_tmp_path = [remote_tmp_dir, File.basename(remote_path)].join('/')
           @machine.communicate.upload(local_path, remote_tmp_path)
-          if @machine.config.vm.guest == "windows"
-            
-          else
+          if @machine.config.vm.guest != "windows"
             @machine.communicate.sudo("install -v -DTZ #{remote_tmp_path} #{remote_path}") do |type, line|
               @machine.ui.info line.chomp, :color => {:stderr => :red, :stdout => :default}[type]
             end
