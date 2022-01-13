@@ -15,6 +15,15 @@ module VagrantPlugins
       end
 
       def provision
+        case @machine.config.vm.guest
+        when :windows
+          provisionWindows
+        else
+          provisionLinux
+        end
+      end
+      
+      def provisionLinux
         unless @machine.guest.capability(:curl_installed)
           @machine.ui.info 'Installing Curl ...'
           @machine.guest.capability(:curl_install)
@@ -75,6 +84,47 @@ module VagrantPlugins
         end
       end
 
+      def provisionWindows 
+
+        scriptDir = File.expand_path('./cap/windows/scripts', File.dirname(__FILE__)) + "/"
+
+        env_text = ""
+        if config.env.is_a?(String)
+          env_text = config.env
+        end
+        if config.env.is_a?(Array)
+          config.env.each {|line| env_text << "-#{line.gsub("=", " ")} "}
+        end
+
+        containerScript = "install-containers-feature.ps1" 
+        @machine.ui.info "Invoking: #{containerScript}"
+  
+        command = File.read(scriptDir + containerScript)
+        @machine.communicate.execute(command, shell: :powershell, elevated: true)
+        @machine.guest.capability(:reboot)
+        @machine.guest.capability(:wait_for_reboot)
+
+        setupRke2 = "setup-rke2.ps1" 
+        @machine.ui.info "Invoking: #{setupRke2}"
+  
+        command = File.read(scriptDir + setupRke2)
+        command["!!INSTALL_URL!!"] = config.installer_url
+        command["!!CONFIG!!"] = config.config
+        command["!!ENV!!"] = env_text
+        @machine.communicate.execute(command, shell: :powershell, elevated: true)
+
+        @machine.ui.info "Checking RKE2 version:"
+        @machine.communicate.test("Get-Command rke2", shell: :powershell)
+        output = ""
+        @machine.communicate.execute("rke2 --version", shell: :powershell)  do |type, line|
+          output = output + "#{line}" if type == :stdout && !line.nil?
+        end
+        @machine.ui.info output
+
+        @machine.ui.info "Starting RKE2 agent:"
+        @machine.communicate.execute("rke2.exe agent service --add", shell: :powershell, elevated: true)
+      end
+
       def build_outputs
         outputs = {
           stdout: Vagrant::Util::LineBuffer.new { |line| handle_comm(:stdout, line) },
@@ -116,9 +166,14 @@ module VagrantPlugins
           remote_tmp_dir = @machine.guest.capability :create_tmp_path, {:type => :directory}
           remote_tmp_path = [remote_tmp_dir, File.basename(remote_path)].join('/')
           @machine.communicate.upload(local_path, remote_tmp_path)
-          @machine.communicate.sudo("install -v -DTZ #{remote_tmp_path} #{remote_path}") do |type, line|
-            @machine.ui.info line.chomp, :color => {:stderr => :red, :stdout => :default}[type]
+          if @machine.config.vm.guest == "windows"
+            
+          else
+            @machine.communicate.sudo("install -v -DTZ #{remote_tmp_path} #{remote_path}") do |type, line|
+              @machine.ui.info line.chomp, :color => {:stderr => :red, :stdout => :default}[type]
+            end
           end
+
         end
         @machine.ui.detail content.chomp, :color => :yellow
         remote_path

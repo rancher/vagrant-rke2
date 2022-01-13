@@ -7,14 +7,15 @@ module VagrantPlugins
         DEFAULT_FILE_OWNER = 'root:root'
         DEFAULT_CONFIG_MODE = DEFAULT_FILE_MODE
         DEFAULT_CONFIG_OWNER = DEFAULT_FILE_OWNER
-        DEFAULT_CONFIG_PATH = '/etc/rancher/rke2/config.yaml'
+        DEFAULT_CONFIG_PATH_LINUX = '/etc/rancher/rke2/config.yaml'
+        DEFAULT_CONFIG_PATH_WINDOWS = 'C:/etc/rancher/rke2/config.yaml'
         DEFAULT_ENV_MODE = DEFAULT_FILE_MODE
         DEFAULT_ENV_OWNER = DEFAULT_FILE_OWNER
         DEFAULT_ENV_PATH = '/etc/rancher/rke2/install.env'
         DEFAULT_INSTALLER_URL = 'https://get.rke2.io'
   
-        # string (.yaml) or hash
-        # @return [Hash]
+        # string (.yaml)
+        # @return [String]
         attr_accessor :config
   
         # Defaults to `0600`
@@ -27,7 +28,7 @@ module VagrantPlugins
   
         # Defaults to `/etc/rancher/rke2/config.yaml`
         # @return [String]
-        # attr_accessor :config_path
+        attr_accessor :config_path
   
         # string (.env) or array
         # @return [Array<String>]
@@ -65,7 +66,7 @@ module VagrantPlugins
           @config = "" if @config == UNSET_VALUE
           @config_mode = @config_mode == UNSET_VALUE ? DEFAULT_CONFIG_MODE : @config_mode.to_s
           @config_owner = @config_owner == UNSET_VALUE ? DEFAULT_CONFIG_OWNER : @config_owner.to_s
-          @config_path = @config_path == UNSET_VALUE ? DEFAULT_CONFIG_PATH : @config_path.to_s
+          @config_path = @config_path == UNSET_VALUE ? DEFAULT_CONFIG_PATH_LINUX : @config_path.to_s
           @env = [] if @env == UNSET_VALUE
           @env_mode = DEFAULT_ENV_MODE if @env_mode == UNSET_VALUE
           @env_owner = DEFAULT_ENV_OWNER if @env_owner == UNSET_VALUE
@@ -78,11 +79,11 @@ module VagrantPlugins
           errors = _detected_errors
   
           unless config_valid?
-            errors << "Rke2 provisioner `config` must be a hash or string (yaml)."
+            errors << "Rke2 provisioner `config` must be a string (yaml)."
           end
   
           unless env_valid?
-            errors << "Rke2 provisioner `env` must be an array, hash, or string."
+            errors << "Rke2 provisioner `env` must be an array or string."
           end
   
           { "rke2 provisioner" => errors }
@@ -90,14 +91,12 @@ module VagrantPlugins
   
         def config_valid?
           return true if config.is_a?(String)
-          return true if config.is_a?(Hash)
           false
         end
   
         def env_valid?
           return true unless env
           return true if env.is_a?(String)
-          return true if env.is_a?(Hash)
           if env.is_a?(Array)
             env.each do |a|
               return false unless a.kind_of?(String)

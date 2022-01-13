@@ -10,6 +10,7 @@ vagrant up --provider=<your favorite provider>
 
 ## Usage
 
+### Linux VMs
 ```ruby
 Vagrant.configure("2") do |config|
   config.vm.box = 'generic/ubuntu2004'
@@ -50,6 +51,38 @@ Vagrant.configure("2") do |config|
   end
 end
 ```
+
+### Windows VMs
+Windows setup is much more restricted. See https://docs.rke2.io/install/install_options/windows_agent_config/ for more info
+```ruby
+Vagrant.configure("2") do |config|
+  config.vm.box          = "StefanScherer/windows_2019"
+  config.vm.communicator = "winrm"
+
+  config.vm.provision :rke2, run: "once" do |rke2|
+    # installer_url: can be anything that Invoke-WebRequest can access from the guest
+    # default =>`https://raw.githubusercontent.com/rancher/rke2/master/install.ps1`
+    # type => String
+    rke2.installer_url = 'https://raw.githubusercontent.com/rancher/rke2/master/install.ps1'
+
+    # env: environment variables passed to the install.ps1 script
+    # type => Array<String> || String
+    rke2.env = %w[Channel=latest Method=Tar]
+    # or
+    rke2.env = "-Channel latest -Method Tar"
+
+    # config: config file content in yaml
+    # type => String
+    # NOTE: kube-proxy-arg: "feature-gates=IPv6DualStack=false" is currently a required config for windows
+    rke2.config = <<~YAML
+      kube-proxy-arg: "feature-gates=IPv6DualStack=false"
+      server: https://172.168.1.200:9345
+      token: vagrant-rke2
+    YAML
+  end
+end
+```
+
 ## Development
 
 See https://www.vagrantup.com/docs/plugins/development-basics

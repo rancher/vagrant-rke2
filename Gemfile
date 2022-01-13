@@ -7,4 +7,5 @@ end
 # Specify your gem's dependencies in vagrant-rke2.gemspec
 group :plugins do
   gem "vagrant-rke2", path: "."
+  # gem "vagrant-reload", path "."
 end

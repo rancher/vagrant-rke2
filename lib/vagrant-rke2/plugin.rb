@@ -28,23 +28,28 @@ module VagrantPlugins
       end
 
       guest_capability(:alpine, :curl_install) do
-        require_relative "cap/alpine/curl_install"
+        require_relative "cap/curl_install"
         Cap::Alpine::CurlInstall
       end
 
       guest_capability(:debian, :curl_install) do
-        require_relative "cap/debian/curl_install"
+        require_relative "cap/curl_install"
         Cap::Debian::CurlInstall
       end
 
       guest_capability(:redhat, :curl_install) do
-        require_relative "cap/redhat/curl_install"
+        require_relative "cap/curl_install"
         Cap::Redhat::CurlInstall
       end
 
       guest_capability(:suse, :curl_install) do
-        require_relative "cap/suse/curl_install"
+        require_relative "cap/curl_install"
         Cap::Suse::CurlInstall
+      end
+    
+      guest_capability(:windows, :rke2_installed) do
+        require_relative "cap/windows/rke2_installed"
+        Cap::Windows::Rke2Installed
       end
     end
   end
