@@ -2,17 +2,20 @@
 
 module VagrantPlugins
     module Rke2
+      DEFAULT_CONFIG_PATH_LINUX = '/etc/rancher/rke2/config.yaml'
+      DEFAULT_CONFIG_PATH_WINDOWS = 'C:/etc/rancher/rke2/config.yaml'
+      DEFAULT_INSTALLER_URL_LINUX = 'https://get.rke2.io'
+      DEFAULT_INSTALLER_URL_WINDOWS = 'https://raw.githubusercontent.com/rancher/rke2/master/install.ps1'
+
       class Config < Vagrant.plugin(2, :config)
         DEFAULT_FILE_MODE = '0600'
         DEFAULT_FILE_OWNER = 'root:root'
         DEFAULT_CONFIG_MODE = DEFAULT_FILE_MODE
         DEFAULT_CONFIG_OWNER = DEFAULT_FILE_OWNER
-        DEFAULT_CONFIG_PATH_LINUX = '/etc/rancher/rke2/config.yaml'
-        DEFAULT_CONFIG_PATH_WINDOWS = 'C:/etc/rancher/rke2/config.yaml'
+        
         DEFAULT_ENV_MODE = DEFAULT_FILE_MODE
         DEFAULT_ENV_OWNER = DEFAULT_FILE_OWNER
         DEFAULT_ENV_PATH = '/etc/rancher/rke2/install.env'
-        DEFAULT_INSTALLER_URL = 'https://get.rke2.io'
   
         # string (.yaml)
         # @return [String]
@@ -76,7 +79,7 @@ module VagrantPlugins
           @env_mode = DEFAULT_ENV_MODE if @env_mode == UNSET_VALUE
           @env_owner = DEFAULT_ENV_OWNER if @env_owner == UNSET_VALUE
           @env_path = DEFAULT_ENV_PATH if @env_path == UNSET_VALUE
-          @installer_url = DEFAULT_INSTALLER_URL if @installer_url == UNSET_VALUE
+          @installer_url = DEFAULT_INSTALLER_URL_LINUX if @installer_url == UNSET_VALUE
           @install_kubectl = true if @install_kubectl == UNSET_VALUE
         end
   

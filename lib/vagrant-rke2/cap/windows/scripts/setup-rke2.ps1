@@ -4,7 +4,7 @@ Invoke-WebRequest -Uri !!INSTALL_URL!! -Outfile install.ps1
 
 Write-Host "Creating RKE2 configuration..."
 New-Item -Type Directory C:/etc/rancher/rke2 -Force
-Set-Content -Path C:/etc/rancher/rke2/config.yaml -Value @"
+Set-Content -Path !!CONFIG_PATH!! -Value @"
 !!CONFIG!!
 "@
 
@@ -17,7 +17,6 @@ $env:PATH+=";C:\var\lib\rancher\rke2\bin;c:\usr\local\bin"
         [Environment]::GetEnvironmentVariable("Path", [EnvironmentVariableTarget]::Machine) + ";C:\var\lib\rancher\rke2\bin;c:\usr\local\bin",
         [EnvironmentVariableTarget]::Machine)
 
-# Write-Host "Starting RKE2 Windows Service..."
-# Push-Location c:\usr\local\bin
-# rke2.exe agent service --add
-# exit 0
+Write-Host "Open ports for RKE2 and Calico in firewall..."
+netsh advfirewall firewall add rule name= "RKE2-kubelet" dir=in action=allow protocol=TCP localport=10250
+netsh advfirewall firewall add rule name= "RKE2-agent" dir=in action=allow protocol=TCP localport=4789

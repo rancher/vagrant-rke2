@@ -58,13 +58,15 @@ module VagrantPlugins
         EOF
         file_upload("rke2-install.sh", prv_file, prv_text)
         @machine.ui.info "Invoking: #{prv_file}"
-
-        outputs, handler = build_outputs
-        begin
-          @machine.communicate.sudo("chmod +x #{prv_file} && #{prv_file}", error_key: :ssh_bad_exit_status_muted, &handler)
-        ensure
-          outputs.values.map(&:close)
+        @machine.communicate.sudo("chmod +x #{prv_file} && #{prv_file}", :error_key => :ssh_bad_exit_status_muted) do |type, line|
+          @machine.ui.detail line, :color => :yellow
         end
+        # outputs, handler = build_outputs
+        # begin
+        #   @machine.communicate.sudo("chmod +x #{prv_file} && #{prv_file}", error_key: :ssh_bad_exit_status_muted, &handler)
+        # ensure
+        #   outputs.values.map(&:close)
+        # end
 
         if config.install_kubectl
           kube_file = "/vagrant/kubectl-install.sh"
@@ -104,6 +106,15 @@ module VagrantPlugins
 
       def provisionWindows 
 
+        if config.config_path == DEFAULT_CONFIG_PATH_LINUX
+          config.config_path = DEFAULT_CONFIG_PATH_WINDOWS
+        end
+        if config.installer_url == DEFAULT_INSTALLER_URL_LINUX
+          config.installer_url = DEFAULT_INSTALLER_URL_WINDOWS     
+        end
+
+        config.installer_url
+
         scriptDir = File.expand_path('./cap/windows/scripts', File.dirname(__FILE__)) + "/"
 
         env_text = ""
@@ -127,9 +138,12 @@ module VagrantPlugins
   
         command = File.read(scriptDir + setupRke2)
         command["!!INSTALL_URL!!"] = config.installer_url
+        command["!!CONFIG_PATH!!"] = config.config_path
         command["!!CONFIG!!"] = config.config
         command["!!ENV!!"] = env_text
-        @machine.communicate.execute(command, {shell: :powershell, elevated: true})
+        @machine.communicate.execute(command, {shell: :powershell, elevated: true}) do |type, line|
+          @machine.ui.detail line.chomp, :color => :yellow
+        end
 
         @machine.ui.info "Checking RKE2 version:"
         @machine.communicate.test("Get-Command rke2", {shell: :powershell})
@@ -139,6 +153,8 @@ module VagrantPlugins
 
         @machine.ui.info "Starting RKE2 agent:"
         @machine.communicate.execute("rke2.exe agent service --add", {shell: :powershell, elevated: true} )
+        @machine.communicate.execute("Start-Service -Name 'rke2'", {shell: :powershell, elevated: true} )
+        
       end
 
       def build_outputs
