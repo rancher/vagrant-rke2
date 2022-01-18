@@ -1,17 +1,18 @@
 ENV['VAGRANT_I_KNOW_WHAT_IM_DOING_PLEASE_BE_QUIET'] = 'true'
 
 Vagrant.configure("2") do |config|
-  config.vagrant.plugins = ["vagrant-reload"]
+  config.vagrant.plugins = ["vagrant-reload", "vagrant-rke2"]
   
 
   config.vm.provider "virtualbox" do |v|
     v.cpus = 2         
     v.memory = 2048
-    v.gui = true
-    v.customize ["modifyvm", :id, "--vram", 128]
-    v.customize ["modifyvm", :id, "--clipboard", "bidirectional"]
-    v.customize ["modifyvm", :id, "--accelerate3d", "on"]
-    v.customize ["modifyvm", :id, "--accelerate2dvideo", "on"]
+    # FOR WINDOWS GUI
+    # v.gui = true
+    # v.customize ["modifyvm", :id, "--vram", 128]
+    # v.customize ["modifyvm", :id, "--clipboard", "bidirectional"]
+    # v.customize ["modifyvm", :id, "--accelerate3d", "on"]
+    # v.customize ["modifyvm", :id, "--accelerate2dvideo", "on"]
     v.linked_clone = true
   end
 
