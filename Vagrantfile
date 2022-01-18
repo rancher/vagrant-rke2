@@ -16,7 +16,8 @@ Vagrant.configure("2") do |config|
   end
 
   server_ip = "10.10.10.100"
-  agent_ip = "10.10.10.101"
+  win_agent_ip = "10.10.10.101"
+  linux_agent_ip = "10.10.10.102"
 
   config.vm.define "server" do |server|
     server.vm.box = 'generic/ubuntu2004'
@@ -35,18 +36,18 @@ Vagrant.configure("2") do |config|
     end
   end
 
-  config.vm.define "agent" do |agent|
-    agent.vm.box          = "StefanScherer/windows_2019"
-    agent.vm.communicator = "winrm"
-    agent.vm.hostname = 'agent'
-    agent.vm.network "private_network", ip: agent_ip, netmask: "255.255.255.0"
+  config.vm.define "win_agent" do |win_agent|
+    win_agent.vm.box          = "StefanScherer/windows_2019"
+    win_agent.vm.communicator = "winrm"
+    win_agent.vm.hostname = 'win-agent'
+    win_agent.vm.network "private_network", ip: win_agent_ip, netmask: "255.255.255.0"
     
-    agent.vm.provision :rke2, run: "once" do |rke2|
+    win_agent.vm.provision :rke2, run: "once" do |rke2|
       rke2.env = %w[Channel=stable]
       rke2.config = <<~YAML
         kube-proxy-arg: "feature-gates=IPv6DualStack=false"
-        node-external-ip: #{agent_ip}
-        node-ip: #{agent_ip}
+        node-external-ip: #{win_agent_ip}
+        node-ip: #{win_agent_ip}
 
         server: https://#{server_ip}:9345
         token: vagrant-rke2
@@ -54,5 +55,22 @@ Vagrant.configure("2") do |config|
     end
   end
 
+  config.vm.define "linux_agent" do |linux_agent|
+    linux_agent.vm.box = 'generic/ubuntu2004'
+    linux_agent.vm.hostname = 'linux-agent'
+    linux_agent.vm.network "private_network", ip: linux_agent_ip, netmask: "255.255.255.0"
+
+    linux_agent.vm.provision :rke2, run: "once" do |rke2|
+      rke2.env = %w[INSTALL_RKE2_CHANNEL=stable INSTALL_RKE2_TYPE=agent]
+      rke2.config_mode = '0644' # side-step https://github.com/k3s-io/k3s/issues/4321
+      rke2.config = <<~YAML
+        write-kubeconfig-mode: 0644
+        node-external-ip: #{linux_agent_ip}
+
+        server: https://#{server_ip}:9345
+        token: vagrant-rke2
+      YAML
+    end
+  end
   
 end

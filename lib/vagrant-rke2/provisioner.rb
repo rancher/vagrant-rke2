@@ -43,6 +43,9 @@ module VagrantPlugins
         end
         file_upload "rke2-install.env", env_file, env_text
 
+        capture = env_text.match(/INSTALL_RKE2_TYPE=([a-z]+)/)
+        service = capture ? capture.captures[0] : ""
+
         prv_file = "/vagrant/rke2-provisioner.sh"
         prv_text = <<~EOF
           #/usr/bin/env bash
@@ -99,9 +102,17 @@ module VagrantPlugins
         end
 
         @machine.ui.info "Starting RKE2 service..."
-        @machine.communicate.sudo("systemctl enable rke2-server.service")
-        @machine.communicate.sudo("systemctl start rke2-server.service")
-
+        if !service.empty?
+          @machine.communicate.sudo("systemctl enable rke2-#{service}.service")
+          @machine.communicate.sudo("systemctl start rke2-#{service}.service") do |type, line|
+            @machine.ui.detail line, :color => :yellow
+          end
+        else
+          @machine.communicate.sudo("systemctl enable rke2-server.service")
+          @machine.communicate.sudo("systemctl start rke2-server.service") do |type, line|
+            @machine.ui.detail line, :color => :yellow
+          end
+        end
       end
 
       def provisionWindows 
