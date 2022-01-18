@@ -15,6 +15,7 @@ module VagrantPlugins
       end
 
       def provision
+        @machine.ui.info "Guest Identity: %s" % @machine.config.vm.guest
         case @machine.config.vm.guest
         when :windows
           provisionWindows
