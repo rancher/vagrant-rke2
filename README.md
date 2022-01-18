@@ -10,6 +10,8 @@ vagrant up --provider=<your favorite provider>
 
 ## Usage
 
+See the [Vagrantfile](./test/Vagrantfile) for a working example.
+
 ### Linux VMs
 ```ruby
 Vagrant.configure("2") do |config|
