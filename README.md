@@ -3,6 +3,8 @@ This plugin was heavily inspired by the [vagrant-k3s](https://github.com/dweomer
 
 ## Installation
 
+Vagrant must be >= v2.2.17 
+
 ```shell
 vagrant plugin install vagrant-rke2
 vagrant up --provider=<your favorite provider>
@@ -14,6 +16,7 @@ See the [Vagrantfile](./test/Vagrantfile) for a working example.
 
 ### Linux VMs
 ```ruby
+Vagrant.require_version ">= 2.2.17"
 Vagrant.configure("2") do |config|
   config.vm.box = 'generic/ubuntu2004'
 
@@ -62,6 +65,7 @@ end
 ### Windows VMs
 Windows setup is much more restricted. See https://docs.rke2.io/install/install_options/windows_agent_config/ for more info
 ```ruby
+Vagrant.require_version ">= 2.2.17"
 Vagrant.configure("2") do |config|
   config.vm.box          = "StefanScherer/windows_2019"
   config.vm.communicator = "winrm"
