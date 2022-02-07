@@ -55,7 +55,7 @@ module VagrantPlugins
   
         # Defaults to true
         # @return [Boolean]
-        attr_accessor :install_kubectl
+        attr_accessor :install_path
 
         def initialize
           @config = UNSET_VALUE
@@ -67,7 +67,7 @@ module VagrantPlugins
           @env_owner = UNSET_VALUE
           @env_path = UNSET_VALUE
           @installer_url = UNSET_VALUE
-          @install_kubectl = UNSET_VALUE
+          @install_path = UNSET_VALUE
         end
   
         def finalize!
@@ -80,7 +80,7 @@ module VagrantPlugins
           @env_owner = DEFAULT_ENV_OWNER if @env_owner == UNSET_VALUE
           @env_path = DEFAULT_ENV_PATH if @env_path == UNSET_VALUE
           @installer_url = DEFAULT_INSTALLER_URL_LINUX if @installer_url == UNSET_VALUE
-          @install_kubectl = true if @install_kubectl == UNSET_VALUE
+          @install_path = true if @install_path == UNSET_VALUE
         end
   
         def validate(machine)
