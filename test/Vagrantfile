@@ -2,8 +2,11 @@ ENV['VAGRANT_I_KNOW_WHAT_IM_DOING_PLEASE_BE_QUIET'] = 'true'
 Vagrant.require_version ">= 2.2.17"
 
 Vagrant.configure("2") do |config|
-  config.vagrant.plugins = ["vagrant-reload", "vagrant-rke2"]
-  
+  # For user example 
+  # config.vagrant.plugins = ["vagrant-reload", "vagrant-rke2"]
+  # For dev work
+  config.vagrant.plugins = ["vagrant-reload"]
+
 
   config.vm.provider "virtualbox" do |v|
     v.cpus = 2         

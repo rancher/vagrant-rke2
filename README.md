@@ -54,10 +54,10 @@ Vagrant.configure("2") do |config|
     rke2.config_mode = '0644' # side-step https://github.com/k3s-io/k3s/issues/4321
     rke2.config_owner = 'root:root' #default
 
-    # install_kubectl: QOL feature, installs latest version of kubectl
+    # install_path: QOL feature, add RKE2 to the PATH and points the KUBECONFIG to rke2.yaml
     # type => Boolean
     # default => true
-    rke2.install_kubectl = false
+    rke2.install_path = false
   end
 end
 ```

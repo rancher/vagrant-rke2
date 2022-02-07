@@ -65,28 +65,6 @@ module VagrantPlugins
         @machine.communicate.sudo("chmod +x #{prv_file} && #{prv_file}", :error_key => :ssh_bad_exit_status_muted) do |type, line|
           @machine.ui.detail line, :color => :yellow
         end
-        # outputs, handler = build_outputs
-        # begin
-        #   @machine.communicate.sudo("chmod +x #{prv_file} && #{prv_file}", error_key: :ssh_bad_exit_status_muted, &handler)
-        # ensure
-        #   outputs.values.map(&:close)
-        # end
-
-        if config.install_kubectl
-          kube_file = "/vagrant/kubectl-install.sh"
-          kube_text = <<~EOF
-            curl -L "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" -o /usr/local/bin/kubectl
-            chmod +x /usr/local/bin/kubectl
-          EOF
-          file_upload("kubectl-install.sh", kube_file, kube_text)
-          @machine.ui.info "Invoking: #{kube_file}"
-          outputs, handler = build_outputs
-          begin
-            @machine.communicate.sudo("chmod +x #{kube_file} && #{kube_file}", &handler)
-          ensure
-            outputs.values.map(&:close)
-          end
-        end
 
         begin
           exe = "rke2"
@@ -112,6 +90,17 @@ module VagrantPlugins
           @machine.communicate.sudo("systemctl enable rke2-server.service")
           @machine.communicate.sudo("systemctl start rke2-server.service") do |type, line|
             @machine.ui.detail line, :color => :yellow
+          end
+        end
+
+        if config.install_path
+          @machine.ui.info "Adding RKE2 to PATH and KUBECONFIG"
+          outputs, handler = build_outputs
+          begin
+            @machine.communicate.sudo("echo 'export KUBECONFIG=/etc/rancher/rke2/rke2.yaml PATH=$PATH:/var/lib/rancher/rke2/bin' >> /home/vagrant/.bashrc", &handler)
+            @machine.communicate.sudo("echo 'export KUBECONFIG=/etc/rancher/rke2/rke2.yaml PATH=$PATH:/var/lib/rancher/rke2/bin' >> /root/.bashrc", &handler)
+          ensure
+            outputs.values.map(&:close)
           end
         end
       end
