@@ -1,5 +1,5 @@
 # Vagrant::RKE2
-This plugin was heavily inspired by the [vagrant-k3s](https://github.com/dweomer/vagrant-k3s) plugin. Check that out and give dweomer some stars.
+This plugin is the companion to the [vagrant-k3s](https://github.com/k3s-io/vagrant-k3s) plugin. It makes deploying RKE2 on vagrant boxes much easier.
 
 ## Installation
 
