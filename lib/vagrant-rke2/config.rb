@@ -57,6 +57,11 @@ module VagrantPlugins
         # @return [Boolean]
         attr_accessor :install_path
 
+        # Defaults to false
+        # @return [Boolean]
+        attr_accessor :skip_start
+
+
         def initialize
           @config = UNSET_VALUE
           @config_mode = UNSET_VALUE
@@ -68,6 +73,7 @@ module VagrantPlugins
           @env_path = UNSET_VALUE
           @installer_url = UNSET_VALUE
           @install_path = UNSET_VALUE
+          @skip_start = UNSET_VALUE
         end
   
         def finalize!
@@ -81,6 +87,7 @@ module VagrantPlugins
           @env_path = DEFAULT_ENV_PATH if @env_path == UNSET_VALUE
           @installer_url = DEFAULT_INSTALLER_URL_LINUX if @installer_url == UNSET_VALUE
           @install_path = true if @install_path == UNSET_VALUE
+          @skip_start = false if @skip_start == UNSET_VALUE
         end
   
         def validate(machine)
