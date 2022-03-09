@@ -88,10 +88,12 @@ module VagrantPlugins
           end
         else
           @machine.communicate.sudo("systemctl enable rke2-server.service")
-          @machine.communicate.sudo("systemctl start rke2-server.service") do |type, line|
-            @machine.ui.detail line, :color => :yellow
+          if !config.skip_start 
+            @machine.communicate.sudo("systemctl start rke2-server.service") do |type, line|
+              @machine.ui.detail line, :color => :yellow
+            end
           end
-        end
+         end
 
         if config.install_path
           @machine.ui.info "Adding RKE2 to PATH and KUBECONFIG"
@@ -154,7 +156,9 @@ module VagrantPlugins
 
         @machine.ui.info "Starting RKE2 agent:"
         @machine.communicate.execute("rke2.exe agent service --add", {shell: :powershell, elevated: true} )
-        @machine.communicate.execute("Start-Service -Name 'rke2'", {shell: :powershell, elevated: true} )
+        if !config.skip_start 
+          @machine.communicate.execute("Start-Service -Name 'rke2'", {shell: :powershell, elevated: true} )
+        end
         
       end
 

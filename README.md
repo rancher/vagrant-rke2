@@ -58,6 +58,11 @@ Vagrant.configure("2") do |config|
     # type => Boolean
     # default => true
     rke2.install_path = false
+
+    # skip_start: install but don't start RKE2
+    # type => Boolean
+    # default => false
+    rke2.skip_start = true
   end
 end
 ```
@@ -90,6 +95,11 @@ Vagrant.configure("2") do |config|
       server: https://172.168.1.200:9345
       token: vagrant-rke2
     YAML
+
+    # skip_start: install but don't start RKE2
+    # type => Boolean
+    # default => false
+    rke2.skip_start = true
   end
 end
 ```
