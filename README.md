@@ -96,6 +96,11 @@ Vagrant.configure("2") do |config|
       token: vagrant-rke2
     YAML
 
+    # install_path: QOL feature, add RKE2 to the PATH
+    # type => Boolean
+    # default => true
+    rke2.install_path = false
+    
     # skip_start: install but don't start RKE2
     # type => Boolean
     # default => false
