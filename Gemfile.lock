@@ -28,7 +28,7 @@ GIT
 PATH
   remote: .
   specs:
-    vagrant-rke2 (0.1.4)
+    vagrant-rke2 (0.1.5)
 
 GEM
   remote: https://rubygems.org/
