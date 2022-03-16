@@ -148,14 +148,23 @@ module VagrantPlugins
           @machine.ui.detail line.chomp, :color => :yellow
         end
 
+        if config.install_path
+          setupPath = "setup-path.ps1" 
+          @machine.ui.info "Invoking: #{setupPath}"
+          command = File.read(scriptDir + setupPath)
+          @machine.communicate.execute(command, {shell: :powershell, elevated: true}) do |type, line|
+            @machine.ui.detail line.chomp, :color => :yellow
+          end
+        end
+
         @machine.ui.info "Checking RKE2 version:"
         @machine.communicate.test("Get-Command rke2", {shell: :powershell})
-        @machine.communicate.execute("rke2 --version", {shell: :powershell})  do |type, line|
+        @machine.communicate.execute('C:\usr\local\bin\rke2.exe --version', {shell: :powershell})  do |type, line|
           @machine.ui.detail line, :color => :yellow
         end
 
         @machine.ui.info "Starting RKE2 agent:"
-        @machine.communicate.execute("rke2.exe agent service --add", {shell: :powershell, elevated: true} )
+        @machine.communicate.execute('C:\usr\local\bin\rke2.exe agent service --add', {shell: :powershell, elevated: true} )
         if !config.skip_start 
           @machine.communicate.execute("Start-Service -Name 'rke2'", {shell: :powershell, elevated: true} )
         end

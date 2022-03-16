@@ -11,12 +11,6 @@ Set-Content -Path !!CONFIG_PATH!! -Value @"
 Write-Host "Installing RKE2 as an agent..."
 ./install.ps1 !!ENV!!
 
-Write-Host "Creating RKE2 environment variables..."
-$env:PATH+=";C:\var\lib\rancher\rke2\bin;c:\usr\local\bin"
-[Environment]::SetEnvironmentVariable("Path",
-        [Environment]::GetEnvironmentVariable("Path", [EnvironmentVariableTarget]::Machine) + ";C:\var\lib\rancher\rke2\bin;c:\usr\local\bin",
-        [EnvironmentVariableTarget]::Machine)
-
 Write-Host "Open ports for RKE2 and Calico in firewall..."
 netsh advfirewall firewall add rule name= "RKE2-kubelet" dir=in action=allow protocol=TCP localport=10250
 netsh advfirewall firewall add rule name= "RKE2-agent" dir=in action=allow protocol=TCP localport=4789
