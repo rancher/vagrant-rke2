@@ -26,8 +26,9 @@ Vagrant.configure("2") do |config|
     server.vm.provision :rke2, run: "once" do |rke2|
       rke2.env = %w[INSTALL_RKE2_CHANNEL=stable INSTALL_RKE2_TYPE=server]
       rke2.config_mode = '0644' # side-step https://github.com/k3s-io/k3s/issues/4321
+       # note that write-kubeconfig-mode needs to be a string
       rke2.config = <<~YAML
-        write-kubeconfig-mode: 0644
+        write-kubeconfig-mode: '0644'
         node-external-ip: #{server_ip}
         token: vagrant-rke2
         cni: calico
