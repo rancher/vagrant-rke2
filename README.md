@@ -44,6 +44,7 @@ Vagrant.configure("2") do |config|
     # config: config file content in yaml
     # type => String
     rke2.config = <<~YAML
+      write-kubeconfig-mode: '0644'
       disable:
       - local-storage
       - servicelb
