@@ -80,6 +80,17 @@ module VagrantPlugins
           end
         end
 
+        if config.install_path
+          @machine.ui.info "Adding RKE2 to PATH and KUBECONFIG"
+          outputs, handler = build_outputs
+          begin
+            @machine.communicate.sudo("echo 'export KUBECONFIG=/etc/rancher/rke2/rke2.yaml PATH=$PATH:/var/lib/rancher/rke2/bin' >> /home/vagrant/.bashrc", &handler)
+            @machine.communicate.sudo("echo 'export KUBECONFIG=/etc/rancher/rke2/rke2.yaml PATH=$PATH:/var/lib/rancher/rke2/bin' >> /root/.bashrc", &handler)
+          ensure
+            outputs.values.map(&:close)
+          end
+        end
+
         @machine.ui.info "Starting RKE2 service..."
         if !service.empty?
           @machine.communicate.sudo("systemctl enable rke2-#{service}.service")
@@ -94,17 +105,6 @@ module VagrantPlugins
             end
           end
          end
-
-        if config.install_path
-          @machine.ui.info "Adding RKE2 to PATH and KUBECONFIG"
-          outputs, handler = build_outputs
-          begin
-            @machine.communicate.sudo("echo 'export KUBECONFIG=/etc/rancher/rke2/rke2.yaml PATH=$PATH:/var/lib/rancher/rke2/bin' >> /home/vagrant/.bashrc", &handler)
-            @machine.communicate.sudo("echo 'export KUBECONFIG=/etc/rancher/rke2/rke2.yaml PATH=$PATH:/var/lib/rancher/rke2/bin' >> /root/.bashrc", &handler)
-          ensure
-            outputs.values.map(&:close)
-          end
-        end
       end
 
       def provisionWindows 
