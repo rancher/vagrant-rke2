@@ -73,8 +73,10 @@ Windows setup is much more restricted. See https://docs.rke2.io/install/install_
 ```ruby
 Vagrant.require_version ">= 2.2.17"
 Vagrant.configure("2") do |config|
-  config.vm.box          = "StefanScherer/windows_2019"
-  config.vm.communicator = "winrm"
+  config.vm.box          = "jborean93/WindowsServer2022"
+  config.vm.communicator = "winssh"
+  config.ssh.password = "vagrant"
+
 
   config.vm.provision :rke2, run: "once" do |rke2|
     # installer_url: can be anything that Invoke-WebRequest can access from the guest
@@ -90,9 +92,7 @@ Vagrant.configure("2") do |config|
 
     # config: config file content in yaml
     # type => String
-    # NOTE: kube-proxy-arg: "feature-gates=IPv6DualStack=false" is currently a required config for windows
     rke2.config = <<~YAML
-      kube-proxy-arg: "feature-gates=IPv6DualStack=false"
       server: https://172.168.1.200:9345
       token: vagrant-rke2
     YAML

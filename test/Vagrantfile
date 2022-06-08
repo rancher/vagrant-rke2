@@ -1,4 +1,5 @@
 ENV['VAGRANT_I_KNOW_WHAT_IM_DOING_PLEASE_BE_QUIET'] = 'true'
+ENV['VAGRANT_NO_PARALLEL'] = 'no'
 Vagrant.require_version ">= 2.2.17"
 
 Vagrant.configure("2") do |config|
@@ -7,10 +8,14 @@ Vagrant.configure("2") do |config|
   # For dev work
   config.vagrant.plugins = ["vagrant-reload"]
 
+  config.vm.provider "libvirt" do |v|
+    v.cpus = 2         
+    v.memory = 2048
+  end
+
   config.vm.provider "virtualbox" do |v|
     v.cpus = 2         
     v.memory = 2048
-   
     v.linked_clone = true
   end
 
@@ -22,6 +27,8 @@ Vagrant.configure("2") do |config|
     server.vm.box = 'generic/ubuntu2004'
     server.vm.hostname = 'server'
     server.vm.network "private_network", ip: server_ip, netmask: "255.255.255.0"
+    # generic/ubuntu2004 suffers from poor default dns servers, creates problems with hitting github.com immediately
+    server.vm.provision "Set DNS", type: "shell", inline: "systemd-resolve --set-dns=8.8.8.8 --interface=eth0"
 
     server.vm.provision :rke2, run: "once" do |rke2|
       rke2.env = %w[INSTALL_RKE2_CHANNEL=stable INSTALL_RKE2_TYPE=server]
@@ -30,6 +37,8 @@ Vagrant.configure("2") do |config|
       rke2.config = <<~YAML
         write-kubeconfig-mode: '0644'
         node-external-ip: #{server_ip}
+        node-ip: #{server_ip}
+
         token: vagrant-rke2
         cni: calico
       YAML
@@ -37,21 +46,22 @@ Vagrant.configure("2") do |config|
   end
 
   config.vm.define "win-agent" do |win_agent|
-    win_agent.vm.box          = "StefanScherer/windows_2019"
-    win_agent.vm.communicator = "winrm"
-    win_agent.vm.hostname = 'win-agent'
-    win_agent.vm.provider "virtualbox" do |v|
-      # FOR WINDOWS GUI
-      v.gui = true
-      v.customize ["modifyvm", :id, "--vram", 128]
-      v.customize ["modifyvm", :id, "--clipboard", "bidirectional"]
-      v.customize ["modifyvm", :id, "--accelerate3d", "on"]
-      v.customize ["modifyvm", :id, "--accelerate2dvideo", "on"]
-    end
+    win_agent.vm.box          = "jborean93/WindowsServer2022"
+    win_agent.vm.hostname     = "win-agent"
+    win_agent.vm.communicator = "winssh"
+    win_agent.ssh.password    = "vagrant"
+    
+    # FOR WINDOWS GUI on virtualbox
+    # win_agent.vm.provider "virtualbox" do |v|
+    #   v.gui = true
+    #   v.customize ["modifyvm", :id, "--vram", 128]
+    #   v.customize ["modifyvm", :id, "--clipboard", "bidirectional"]
+    #   v.customize ["modifyvm", :id, "--accelerate3d", "on"]
+    #   v.customize ["modifyvm", :id, "--accelerate2dvideo", "on"]
+    # end
     win_agent.vm.network "private_network", ip: win_agent_ip, netmask: "255.255.255.0"
     win_agent.vm.provision :rke2, run: "once" do |rke2|
       rke2.config = <<~YAML
-        kube-proxy-arg: "feature-gates=IPv6DualStack=false"
         node-external-ip: #{win_agent_ip}
         node-ip: #{win_agent_ip}
 
@@ -65,6 +75,7 @@ Vagrant.configure("2") do |config|
     linux_agent.vm.box = 'generic/ubuntu2004'
     linux_agent.vm.hostname = 'linux-agent'
     linux_agent.vm.network "private_network", ip: linux_agent_ip, netmask: "255.255.255.0"
+    linux_agent.vm.provision "Set DNS", type: "shell", inline: "systemd-resolve --set-dns=8.8.8.8 --interface=eth0"
 
     linux_agent.vm.provision :rke2, run: "once" do |rke2|
       rke2.env = %w[INSTALL_RKE2_CHANNEL=stable INSTALL_RKE2_TYPE=agent]
@@ -72,7 +83,8 @@ Vagrant.configure("2") do |config|
       rke2.config = <<~YAML
         write-kubeconfig-mode: 0644
         node-external-ip: #{linux_agent_ip}
-
+        node-ip: #{linux_agent_ip}
+        
         server: https://#{server_ip}:9345
         token: vagrant-rke2
       YAML
