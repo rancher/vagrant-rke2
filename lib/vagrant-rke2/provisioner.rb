@@ -94,8 +94,10 @@ module VagrantPlugins
         @machine.ui.info "Starting RKE2 service..."
         if !service.empty?
           @machine.communicate.sudo("systemctl enable rke2-#{service}.service")
-          @machine.communicate.sudo("systemctl start rke2-#{service}.service") do |type, line|
-            @machine.ui.detail line, :color => :yellow
+          if !config.skip_start
+            @machine.communicate.sudo("systemctl start rke2-#{service}.service") do |type, line|
+              @machine.ui.detail line, :color => :yellow
+            end
           end
         else
           @machine.communicate.sudo("systemctl enable rke2-server.service")
