@@ -49,7 +49,7 @@ module VagrantPlugins
 
         prv_file = "/vagrant/rke2-provisioner.sh"
         prv_text = <<~EOF
-          #/usr/bin/env bash
+          #! /usr/bin/env bash
           set -eu -o pipefail
           chown #{config.config_owner} #{config.config_path}
           chmod #{config.config_mode} #{config.config_path}
