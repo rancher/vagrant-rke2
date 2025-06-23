@@ -1,6 +1,5 @@
 # frozen_string_literal: false
 
-require 'multi_json/convertible_hash_keys'
 require "vagrant/util/line_buffer"
 require 'vagrant/errors'
 require 'yaml'
@@ -8,7 +7,6 @@ require 'yaml'
 module VagrantPlugins
   module Rke2
     class Provisioner < Vagrant.plugin('2', :provisioner)
-      include MultiJson::ConvertibleHashKeys
       def initialize(machine,config)
         super(machine,config)
         @logger = Log4r::Logger.new("vagrant::provisioners::rke2")
@@ -31,7 +29,7 @@ module VagrantPlugins
         end
 
         cfg_file = config.config_path.to_s
-        cfg_yaml = config.config.is_a?(String) ? config.config : stringify_keys(config.config).to_yaml
+        cfg_yaml = config.config.is_a?(String) ? config.config : config.config.transform_keys(&:to_s).to_yaml
         file_upload "rke2-config.yaml", cfg_file, cfg_yaml
 
         env_file = config.env_path.to_s
